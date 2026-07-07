@@ -355,8 +355,11 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
   flex:none;display:flex;align-items:center;gap:10px;padding:16px 24px;
   border-top:1px solid var(--border);background:var(--panel);flex-wrap:wrap;
 }
+.share-stack{flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px}
 .share-row{display:flex;gap:8px;flex:1;min-width:260px}
 .share-row .inp{font-size:12.5px;color:var(--slate)}
+.share-row .inp:disabled{opacity:.5}
+.share-stack .hint{font-size:12px;line-height:1.55;color:var(--slate)}
 .saved-flash{color:var(--lime);font-family:'LINE Seed Sans TH','Noto Sans Thai',sans-serif;font-weight:700;font-size:14px;opacity:0;transition:opacity .3s}
 .saved-flash.on{opacity:1}
 
@@ -543,6 +546,18 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
       </div>
 
       <div class="sec">
+        <h3>โปรไฟล์หลักสูตร</h3>
+        <p class="hint">เลือกหลักสูตรเพื่อโหลดชุดหลักสูตรแนะนำและวิดีโอที่กำหนดไว้สำหรับหลักสูตรนั้นลงในฟอร์มด้านล่าง แล้วตรวจทานก่อนกด "บันทึกการตั้งค่า" (การเลือกที่นี่ยังไม่บันทึกอัตโนมัติ)</p>
+        <div class="field" style="max-width:420px">
+          <label for="courseProfile">หลักสูตร</label>
+          <select class="inp" id="courseProfile">
+            <option value="">— ค่าเริ่มต้นของสถาบัน —</option>
+          </select>
+        </div>
+        <p class="hint" id="courseNotice" style="color:var(--lime);margin-top:10px" hidden></p>
+      </div>
+
+      <div class="sec">
         <h3>วิดีโอ YouTube</h3>
         <p class="hint">วางลิงก์วิดีโอหรือเพลย์ลิสต์ YouTube บรรทัดละ 1 รายการ — รองรับ youtube.com/watch, youtu.be, Shorts และลิงก์ Playlist (playlist?list=...) ข้อความหลังลิงก์ในบรรทัดเดียวกันใช้เป็นโน้ตได้ ระบบอ่านเฉพาะลิงก์</p>
         <div class="radio-row">
@@ -647,9 +662,19 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
     <div class="panel-foot">
       <button class="btn btn-lime" id="btnSave">บันทึกการตั้งค่า</button>
       <button class="btn" id="btnResetDefaults">คืนค่าเริ่มต้น</button>
-      <div class="share-row">
-        <input class="inp" id="shareLink" readonly aria-label="ลิงก์สำหรับเปิดบนทีวี">
-        <button class="btn" id="btnCopyLink">คัดลอกลิงก์</button>
+      <div class="share-stack">
+        <div class="share-row">
+          <input class="inp" id="shareLink" readonly aria-label="ลิงก์ snapshot (#cfg=)">
+          <button class="btn" id="btnCopyLink">คัดลอกลิงก์</button>
+        </div>
+        <div class="share-row">
+          <input class="inp" id="courseLink" readonly aria-label="ลิงก์หลักสูตร (?course=)" placeholder="เลือกโปรไฟล์หลักสูตรด้านบนเพื่อสร้างลิงก์">
+          <button class="btn" id="btnCopyCourseLink">คัดลอกลิงก์หลักสูตร</button>
+        </div>
+        <p class="hint" style="margin:0">
+          <b style="color:var(--sky)">ลิงก์หลักสูตร (?course=)</b> — สะท้อนโปรไฟล์ล่าสุดในไฟล์ที่ deploy เสมอ เหมาะสำหรับส่งให้ผู้สอน/ปักหมุดไว้ เนื้อหาอัปเดตได้ด้วยการ redeploy<br>
+          <b style="color:var(--lime)">ลิงก์ snapshot (#cfg=)</b> — freeze ค่าที่ตั้งไว้ ณ ตอนนี้ทั้งหมด เหมาะกับการตั้งค่าเฉพาะกิจครั้งเดียว
+        </p>
       </div>
     </div>
   </div>
@@ -783,7 +808,36 @@ const DEFAULTS = {
   warnSec: 60
 };
 
+// ---------------------------------------------------------------------------
+// Per-course break-screen profiles, keyed by course_id.
+// Each profile is a PARTIAL config — only fields that differ from DEFAULTS.
+// mergeCfg(DEFAULTS, profile) fills in everything else.
+//
+// ⚠️ PLACEHOLDER DATA: โปรไฟล์ด้านล่างเป็นตัวอย่าง seed ที่ reuse หลักสูตร/วิดีโอ
+//    จาก DEFAULTS เพื่อให้รันได้ทันที — Phase 2 จะให้ตัวสร้าง (admin generator)
+//    เขียนทับด้วยข้อมูลจริงต่อหลักสูตร
+//
+// `label` = ข้อความสำหรับ UI picker เท่านั้น (metadata) — ต้องถูกตัดทิ้งก่อน merge
+// เข้า cfg เสมอ เพื่อไม่ให้รั่วเข้าไปใน frozen config (#cfg=)
+// ---------------------------------------------------------------------------
+const PROFILES = {
+  "power-bi-desktop": {
+    label: "Power BI Desktop for Business Analytics",
+    // แนะนำเฉพาะหลักสูตรสาย Data/Analytics
+    courses: [ DEFAULTS.courses[0], DEFAULTS.courses[2], DEFAULTS.courses[1] ],
+    videos: { mode: "same", same: DEFAULTS.videos.byDay["3"] } // ชุดวิดีโอ Power BI
+  },
+  "excel-advanced": {
+    label: "Microsoft Excel Advanced",
+    // แนะนำ Excel Advanced + คอร์สต่อยอด
+    courses: [ DEFAULTS.courses[1], DEFAULTS.courses[0] ],
+    videos: { mode: "same", same: DEFAULTS.videos.byDay["2"] } // ชุดวิดีโอ Excel ขั้นสูง
+  }
+};
+
 let cfg = deepClone(DEFAULTS);
+let activeCourseId = "";     // course_id ที่โหลดผ่าน ?course= (ว่าง = ใช้ DEFAULTS)
+let unknownCourseId = null;  // ?course= ที่ไม่พบใน PROFILES (สำหรับแจ้งเตือนในตั้งค่า)
 
 /* ---------- state ---------- */
 let endAt = 0, totalMs = 0, tickId = null, running = false, infiniteMode = false;
@@ -1268,8 +1322,8 @@ function stopPromo(){ clearInterval(promoTimer); promoTimer = null; }
 /* ---------- settings (back office) ---------- */
 let draft = null;
 
-function openSettings(){
-  draft = deepClone(cfg);
+// เติมทุก field ในฟอร์มตั้งค่าจาก draft ปัจจุบัน (ใช้ร่วมกันหลายที่ ไม่ซ้ำโค้ด)
+function refreshSettingsFields(){
   buildPresetEditor();
   buildVideoEditor();
   buildCourseEditor();
@@ -1288,7 +1342,76 @@ function openSettings(){
   $("sloganText").value = draft.slogan;
   $("siteUrl").value = draft.site;
   $("chimeOn").checked = !!draft.chime;
+}
+
+// เติมตัวเลือกโปรไฟล์หลักสูตรจาก PROFILES (idempotent)
+function populateProfileSelect(){
+  const sel = $("courseProfile");
+  sel.innerHTML = '<option value="">— ค่าเริ่มต้นของสถาบัน —</option>';
+  for (const id of Object.keys(PROFILES)){
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = PROFILES[id].label || id;
+    sel.appendChild(opt);
+  }
+}
+
+// สร้าง base URL (origin+pathname) โดยตัด query/hash ทิ้ง สำหรับลิงก์ ?course=
+function pageBase(){
+  return (location.origin && location.origin !== "null")
+    ? location.origin + location.pathname
+    : location.pathname;
+}
+
+// อัปเดตช่องลิงก์หลักสูตร (?course=) ตามโปรไฟล์ที่เลือกใน picker
+function updateCourseLink(){
+  const id = $("courseProfile").value;
+  const el = $("courseLink");
+  const btn = $("btnCopyCourseLink");
+  if (id && PROFILES[id]){
+    el.value = pageBase() + "?course=" + id;
+    el.disabled = false; btn.disabled = false;
+  } else {
+    el.value = "";
+    el.disabled = true; btn.disabled = true;
+  }
+}
+
+// แจ้งเตือนเมื่อ ?course= ตอนโหลดไม่พบใน PROFILES
+function renderProfileNotice(){
+  const n = $("courseNotice");
+  if (unknownCourseId){
+    n.textContent = "ไม่พบโปรไฟล์หลักสูตร '" + unknownCourseId + "' — กำลังใช้ค่าเริ่มต้น";
+    n.hidden = false;
+  } else {
+    n.textContent = "";
+    n.hidden = true;
+  }
+}
+
+// เมื่อเปลี่ยนโปรไฟล์ใน picker: โหลดลง draft (partial-merge over DEFAULTS) แล้วสร้างฟอร์มใหม่
+// ไม่บันทึกอัตโนมัติ — ผู้ดูแลยังต้องกด "บันทึกการตั้งค่า" เอง
+function onProfileChange(){
+  const id = $("courseProfile").value;
+  if (id && PROFILES[id]){
+    const p = { ...PROFILES[id] };
+    delete p.label;                     // label เป็น UI metadata ไม่ใช่ config
+    draft = mergeCfg(DEFAULTS, p);
+  } else {
+    draft = deepClone(DEFAULTS);
+  }
+  refreshSettingsFields();
+  updateCourseLink();
+}
+
+function openSettings(){
+  draft = deepClone(cfg);
+  populateProfileSelect();
+  $("courseProfile").value = activeCourseId;
+  refreshSettingsFields();
   updateShareLink();
+  updateCourseLink();
+  renderProfileNotice();
   $("modalSettings").hidden = false;
 }
 function closeSettings(){ $("modalSettings").hidden = true; }
@@ -1410,22 +1533,9 @@ function saveSettings(){
 
 function resetDefaults(){
   draft = deepClone(DEFAULTS);
-  buildPresetEditor(); buildVideoEditor(); buildCourseEditor();
-  $("optShuffle").checked = !!draft.playback.shuffle;
-  $("optLoop").checked = !!draft.playback.loop;
-  document.querySelectorAll('input[name="layoutMode"]').forEach(r=>{
-    r.checked = (r.value === draft.display.layout);
-  });
-  $("optCountdown").checked = !!draft.display.showCountdown;
-  $("tickerOn").checked = !!draft.display.tickerOn;
-  $("tickerText").value = draft.display.tickerText;
-  $("tickerSpeed").value = draft.display.tickerSpeed;
-  $("rotateSec").value = draft.rotateSec;
-  $("endTitle").value = draft.endTitle;
-  $("endSub").value = draft.endSub;
-  $("sloganText").value = draft.slogan;
-  $("siteUrl").value = draft.site;
-  $("chimeOn").checked = !!draft.chime;
+  $("courseProfile").value = "";   // กลับไปใช้ค่าเริ่มต้นของสถาบัน
+  refreshSettingsFields();
+  updateCourseLink();
 }
 
 /* ---------- misc UI ---------- */
@@ -1453,6 +1563,18 @@ function copyShareLink(){
   $("btnCopyLink").textContent = "คัดลอกแล้ว";
   setTimeout(()=> $("btnCopyLink").textContent = "คัดลอกลิงก์", 1600);
 }
+function copyCourseLink(){
+  const el = $("courseLink");
+  if (!el.value) return;
+  el.select(); el.setSelectionRange(0, 99999);
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(el.value).catch(()=>{ try{document.execCommand("copy");}catch(e){} });
+  } else {
+    try{ document.execCommand("copy"); }catch(e){}
+  }
+  $("btnCopyCourseLink").textContent = "คัดลอกแล้ว";
+  setTimeout(()=> $("btnCopyCourseLink").textContent = "คัดลอกลิงก์หลักสูตร", 1600);
+}
 
 /* ---------- events ---------- */
 $("btnCustomStart").addEventListener("click", ()=>{
@@ -1474,6 +1596,8 @@ $("btnCloseSettings").addEventListener("click", closeSettings);
 $("btnSave").addEventListener("click", saveSettings);
 $("btnResetDefaults").addEventListener("click", resetDefaults);
 $("btnCopyLink").addEventListener("click", copyShareLink);
+$("btnCopyCourseLink").addEventListener("click", copyCourseLink);
+$("courseProfile").addEventListener("change", onProfileChange);
 $("btnAddPreset").addEventListener("click", ()=>{
   draft.presets.push({label:"พักเบรก", min:15}); buildPresetEditor();
 });
@@ -1495,11 +1619,24 @@ document.addEventListener("keydown", e=>{
 
 /* ---------- init ---------- */
 (async function init(){
+  // ลำดับความสำคัญของ config (เฉพาะเจาะจงสุดชนะ):
+  //   1) #cfg=...        → snapshot ที่ freeze มาแล้ว (override เต็มรูปแบบ)
+  //   2) ?course=<id>    → โหลดโปรไฟล์ของหลักสูตรนั้นจาก PROFILES
+  //   3) DEFAULTS/stored → ค่าเริ่มต้นของสถาบัน (safety net)
   const m = location.hash.match(/#cfg=([A-Za-z0-9+/=_-]+)/);
+  const qs = new URLSearchParams(location.search);
+  const courseId = qs.get("course");
+
   if (m){
     const parsed = decodeCfg(m[1]);
     if (parsed) cfg = mergeCfg(DEFAULTS, parsed);
+  } else if (courseId && PROFILES[courseId]){
+    const p = { ...PROFILES[courseId] };
+    delete p.label;                       // label เป็น UI metadata ไม่ใช่ config
+    cfg = mergeCfg(DEFAULTS, p);
+    activeCourseId = courseId;
   } else {
+    if (courseId) unknownCourseId = courseId;  // ?course= แต่ไม่พบโปรไฟล์ → แจ้งเตือนภายหลัง
     const stored = await storGet();
     if (stored) cfg = mergeCfg(DEFAULTS, stored);
   }
@@ -1507,7 +1644,6 @@ document.addEventListener("keydown", e=>{
   renderStart();
   updateShareLink();
 
-  const qs = new URLSearchParams(location.search);
   const raw = qs.get("start");
   if (raw !== null){
     const auto = Number(raw);
