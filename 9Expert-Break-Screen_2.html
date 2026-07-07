@@ -146,7 +146,8 @@ body.in-break .corner-actions{display:none}
 /* ---------- BREAK SCREEN ---------- */
 .screen-break{
   position:relative;z-index:1;height:100dvh;display:flex;flex-direction:column;
-  padding:var(--pad);gap:clamp(10px,1.4vh,18px);
+  /* overscan-safe: บางโปรเจคเตอร์ครอบขอบ ~3-5% ตอนสเกลสัญญาณมิเรอร์ */
+  padding:max(var(--pad),2.5vmin);gap:clamp(10px,1.4vh,18px);
 }
 .topbar{display:flex;align-items:center;gap:clamp(12px,1.5vw,20px);flex:none}
 .topbar .logo{height:clamp(28px,3.2vh,42px);width:auto}
@@ -260,8 +261,8 @@ body[data-layout="wide"] .promo-title{font-size:clamp(23px,2.1vw,34px)}
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 body[data-layout="wide"] .promo-desc{-webkit-line-clamp:4;font-size:clamp(15px,1.25vw,18px)}
 .promo-foot{margin-top:auto;display:flex;align-items:center;gap:14px;flex:none}
-.qr-wrap{flex:none;background:#fff;border-radius:12px;padding:7px;width:clamp(86px,7.5vw,116px);height:clamp(86px,7.5vw,116px)}
-.qr-wrap img{width:100%;height:100%;image-rendering:pixelated}
+.qr-wrap{flex:none;background:#fff;border-radius:12px;padding:7px;width:clamp(120px,9vw,180px);height:clamp(120px,9vw,180px)}
+.qr-wrap img,#promoQr{width:100%;height:100%;image-rendering:pixelated}
 .promo-foot .info{display:flex;flex-direction:column;gap:6px;min-width:0}
 .promo-foot .scan{font-family:'LINE Seed Sans TH','Noto Sans Thai',sans-serif;font-size:13px;color:var(--slate);line-height:1.45}
 .dots{display:flex;gap:6px;flex:none}
@@ -273,6 +274,17 @@ body[data-layout="wide"] .promo-desc{-webkit-line-clamp:4;font-size:clamp(15px,1
   color:var(--slate);font-size:clamp(12.5px,1vw,14.5px);padding:0 4px;
 }
 .rail-foot .slog{font-family:'LINE Seed Sans TH','Noto Sans Thai',sans-serif;font-weight:700;color:var(--sky)}
+
+/* ---------- PROJECTOR MODE (type scale for back-of-room legibility) ---------- */
+/* เหมือน standard ทุกอย่าง แต่ยกเพดาน clamp() ให้ใหญ่ขึ้น (ไม่ลด min) + QR ใหญ่ขึ้น */
+body[data-layout="projector"] .count-digits{font-size:clamp(52px,7vw,160px)}
+body[data-layout="projector"] .promo-title{font-size:clamp(23px,2.4vw,40px)}
+body[data-layout="projector"] .promo-desc{font-size:clamp(15px,1.35vw,20px);-webkit-line-clamp:4}
+body[data-layout="projector"] .promo-meta{font-size:clamp(13px,1.15vw,18px)}
+body[data-layout="projector"] .promo-foot .scan{font-size:clamp(14px,1.15vw,18px)}
+body[data-layout="projector"] #promoUrl{font-size:clamp(14px,1.1vw,18px)}
+body[data-layout="projector"] .rail-foot{font-size:clamp(13.5px,1.15vw,17px)}
+body[data-layout="projector"] .qr-wrap{width:clamp(140px,11vw,220px);height:clamp(140px,11vw,220px)}
 
 /* ---------- END OVERLAY ---------- */
 .overlay{
@@ -367,7 +379,10 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
   *{animation:none !important;transition:none !important}
   .ticker-track{animation:none !important;transform:none !important}
 }
-@media (max-width:1024px){
+/* Escape hatch สำหรับ viewport ที่เล็กจริง ๆ เท่านั้น (หน้าต่างแคบมาก หรือเตี้ยมาก)
+   — ไม่ยิงที่ความสูงจอโปรเจคเตอร์ปกติ 720–768px และไม่ยิงที่ 1366×768 ในแท็บปกติ
+   การมิเรอร์ 16:9/16:10 ปกติจะถูกตรึงไว้หน้าจอเดียวด้วยลูกโซ่ flex + dvh */
+@media (max-width:860px), (max-height:480px){
   body{overflow:auto}
   .screen-break{height:auto;min-height:100dvh}
   .layout{grid-template-columns:1fr !important}
@@ -590,6 +605,8 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
             <span><b>เน้นประชาสัมพันธ์</b><small>แถบขวากว้างขึ้น Cover และชื่อหลักสูตรใหญ่ขึ้น เหมาะกับจอหน้าห้องอบรม</small></span></label>
           <label><input type="radio" name="layoutMode" value="video">
             <span><b>วิดีโอเต็มจอ</b><small>ซ่อนแถบขวาทั้งหมด เหมาะกับทีวีห้องพักส่วนกลางที่ต้องการดูวิดีโออย่างเดียว</small></span></label>
+          <label><input type="radio" name="layoutMode" value="projector">
+            <span><b>โปรเจคเตอร์ (ตัวใหญ่ อ่านไกล)</b><small>เหมือนมาตรฐานแต่ขยายตัวเลข ตัวอักษร และ QR ให้ใหญ่ขึ้น เหมาะกับการมิเรอร์ขึ้นโปรเจคเตอร์ให้ผู้เรียนหลังห้องอ่านได้ชัด</small></span></label>
         </div>
         <div class="check-row">
           <input type="checkbox" id="optCountdown">
