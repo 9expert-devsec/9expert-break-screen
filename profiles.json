@@ -1,0 +1,70 @@
+{
+  "power-bi-desktop": {
+    "label": "Power BI Desktop for Business Analytics",
+    "courses": [
+      {
+        "badge": "Best Seller",
+        "title": "Power BI Desktop for Business Analytics",
+        "desc": "เปลี่ยนข้อมูลเป็น Insight สร้างรายงานแบบ Interactive Dashboard เพื่อการตัดสินใจทางธุรกิจ",
+        "meta": "2 วัน (12 ชม.) · 8,500.-",
+        "img": "https://www.9experttraining.com/sites/default/files/styles/cover/public/course/cover/Power%20BI%20Desktop%20for%20Business%20Analytics.png.webp?itok=bS-YZgVY",
+        "url": "https://www.9experttraining.com/power-bi-desktop-business-analytics-training-course"
+      },
+      {
+        "badge": "AI Skills",
+        "title": "Microsoft 365 Copilot for Business Professionals",
+        "desc": "เปลี่ยน Microsoft 365 ให้เป็นทีมงาน AI ส่วนตัว ลดเวลาทำเอกสาร สรุปประชุม และวิเคราะห์ข้อมูล",
+        "meta": "2 วัน (12 ชม.) · 14,900.-",
+        "img": "https://www.9experttraining.com/sites/default/files/styles/cover/public/course/cover/Business%20Professionals_1.png.webp?itok=3M7gPvff",
+        "url": "https://www.9experttraining.com/microsoft-365-copilot-training-course"
+      },
+      {
+        "badge": "Advanced",
+        "title": "Microsoft Excel Advanced",
+        "desc": "สูตรคำนวณซับซ้อน PivotTable PivotChart และ Power Query พร้อมเทคนิคใช้งานได้จริง",
+        "meta": "2 วัน (12 ชม.) · 8,500.-",
+        "img": "https://www.9experttraining.com/sites/default/files/styles/large_cover/public/course/images/Microsoft%20Excel%20Advanced-100.webp?itok=7l3lIv6L",
+        "url": "https://www.9experttraining.com/excel-advanced-training-course"
+      }
+    ],
+    "videos": {
+      "mode": "same",
+      "same": [
+        "https://youtu.be/WSvkcRjTBMQ — แนะนำ Power BI Desktop สำหรับผู้เริ่มต้น",
+        "https://youtu.be/nThhgzLPPZA — เริ่มต้น Power BI เพื่อการวิเคราะห์ข้อมูล",
+        "https://youtu.be/xZHRyPpK23A — Power BI วิเคราะห์ข้อมูลจากไฟล์ Excel",
+        "https://youtu.be/jbwhA0sEWiE — แนะนำหลักสูตร Power BI for Data Analytics"
+      ]
+    }
+  },
+  "excel-advanced": {
+    "label": "Microsoft Excel Advanced",
+    "courses": [
+      {
+        "badge": "Advanced",
+        "title": "Microsoft Excel Advanced",
+        "desc": "สูตรคำนวณซับซ้อน PivotTable PivotChart และ Power Query พร้อมเทคนิคใช้งานได้จริง",
+        "meta": "2 วัน (12 ชม.) · 8,500.-",
+        "img": "https://www.9experttraining.com/sites/default/files/styles/large_cover/public/course/images/Microsoft%20Excel%20Advanced-100.webp?itok=7l3lIv6L",
+        "url": "https://www.9experttraining.com/excel-advanced-training-course"
+      },
+      {
+        "badge": "Best Seller",
+        "title": "Power BI Desktop for Business Analytics",
+        "desc": "เปลี่ยนข้อมูลเป็น Insight สร้างรายงานแบบ Interactive Dashboard เพื่อการตัดสินใจทางธุรกิจ",
+        "meta": "2 วัน (12 ชม.) · 8,500.-",
+        "img": "https://www.9experttraining.com/sites/default/files/styles/cover/public/course/cover/Power%20BI%20Desktop%20for%20Business%20Analytics.png.webp?itok=bS-YZgVY",
+        "url": "https://www.9experttraining.com/power-bi-desktop-business-analytics-training-course"
+      }
+    ],
+    "videos": {
+      "mode": "same",
+      "same": [
+        "https://youtu.be/KgeGUBi5Kr0 — PivotTable พื้นฐานสู่ Dashboard",
+        "https://youtu.be/FgblcbjyKt8 — Conditional Formatting ขั้นสูง",
+        "https://youtu.be/bTNE1vcB6xA — Excel Macro เบื้องต้น",
+        "https://youtu.be/IrgXKfn-6U0 — สร้างใบแจ้งหนี้ PDF 100 ไฟล์ด้วย Macro"
+      ]
+    }
+  }
+}

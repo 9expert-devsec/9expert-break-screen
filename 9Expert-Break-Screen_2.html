@@ -830,9 +830,10 @@ const DEFAULTS = {
 // Each profile is a PARTIAL config — only fields that differ from DEFAULTS.
 // mergeCfg(DEFAULTS, profile) fills in everything else.
 //
-// ⚠️ PLACEHOLDER DATA: โปรไฟล์ด้านล่างเป็นตัวอย่าง seed ที่ reuse หลักสูตร/วิดีโอ
-//    จาก DEFAULTS เพื่อให้รันได้ทันที — Phase 2 จะให้ตัวสร้าง (admin generator)
-//    เขียนทับด้วยข้อมูลจริงต่อหลักสูตร
+// ⚠️ FALLBACK / SEED ONLY: แหล่งข้อมูลจริงคือไฟล์ profiles.json (same-origin)
+//    ที่ตัวสร้างฝั่ง MSDB export ออกมา และ deploy คู่กับไฟล์นี้ (ดู init())
+//    ออบเจ็กต์ด้านล่างใช้เป็น fallback ตอน fetch profiles.json ไม่สำเร็จ
+//    (ออฟไลน์ / ยังไม่ได้ deploy) และเป็น seed สำหรับ dev ในเครื่อง
 //
 // `label` = ข้อความสำหรับ UI picker เท่านั้น (metadata) — ต้องถูกตัดทิ้งก่อน merge
 // เข้า cfg เสมอ เพื่อไม่ให้รั่วเข้าไปใน frozen config (#cfg=)
@@ -854,7 +855,10 @@ const PROFILES = {
 
 let cfg = deepClone(DEFAULTS);
 let activeCourseId = "";     // course_id ที่โหลดผ่าน ?course= (ว่าง = ใช้ DEFAULTS)
-let unknownCourseId = null;  // ?course= ที่ไม่พบใน PROFILES (สำหรับแจ้งเตือนในตั้งค่า)
+let unknownCourseId = null;  // ?course= ที่ไม่พบในโปรไฟล์ (สำหรับแจ้งเตือนในตั้งค่า)
+// lookup โปรไฟล์ที่ใช้จริง = seed ในไฟล์ (PROFILES) ทับด้วย profiles.json ตอน init()
+// เริ่มต้นเป็น seed ไว้ก่อน เผื่อ fetch ล้มเหลว UI ก็ยังมีโปรไฟล์ให้เลือก
+let effectiveProfiles = { ...PROFILES };
 
 /* ---------- state ---------- */
 let endAt = 0, totalMs = 0, tickId = null, running = false, infiniteMode = false;
@@ -1361,14 +1365,14 @@ function refreshSettingsFields(){
   $("chimeOn").checked = !!draft.chime;
 }
 
-// เติมตัวเลือกโปรไฟล์หลักสูตรจาก PROFILES (idempotent)
+// เติมตัวเลือกโปรไฟล์หลักสูตรจาก effectiveProfiles (seed + profiles.json) — idempotent
 function populateProfileSelect(){
   const sel = $("courseProfile");
   sel.innerHTML = '<option value="">— ค่าเริ่มต้นของสถาบัน —</option>';
-  for (const id of Object.keys(PROFILES)){
+  for (const id of Object.keys(effectiveProfiles)){
     const opt = document.createElement("option");
     opt.value = id;
-    opt.textContent = PROFILES[id].label || id;
+    opt.textContent = effectiveProfiles[id].label || id;
     sel.appendChild(opt);
   }
 }
@@ -1385,7 +1389,7 @@ function updateCourseLink(){
   const id = $("courseProfile").value;
   const el = $("courseLink");
   const btn = $("btnCopyCourseLink");
-  if (id && PROFILES[id]){
+  if (id && effectiveProfiles[id]){
     el.value = pageBase() + "?course=" + id;
     el.disabled = false; btn.disabled = false;
   } else {
@@ -1410,8 +1414,8 @@ function renderProfileNotice(){
 // ไม่บันทึกอัตโนมัติ — ผู้ดูแลยังต้องกด "บันทึกการตั้งค่า" เอง
 function onProfileChange(){
   const id = $("courseProfile").value;
-  if (id && PROFILES[id]){
-    const p = { ...PROFILES[id] };
+  if (id && effectiveProfiles[id]){
+    const p = { ...effectiveProfiles[id] };
     delete p.label;                     // label เป็น UI metadata ไม่ใช่ config
     draft = mergeCfg(DEFAULTS, p);
   } else {
@@ -1638,17 +1642,31 @@ document.addEventListener("keydown", e=>{
 (async function init(){
   // ลำดับความสำคัญของ config (เฉพาะเจาะจงสุดชนะ):
   //   1) #cfg=...        → snapshot ที่ freeze มาแล้ว (override เต็มรูปแบบ)
-  //   2) ?course=<id>    → โหลดโปรไฟล์ของหลักสูตรนั้นจาก PROFILES
+  //   2) ?course=<id>    → โหลดโปรไฟล์ของหลักสูตรนั้นจาก profiles (json + seed)
   //   3) DEFAULTS/stored → ค่าเริ่มต้นของสถาบัน (safety net)
   const m = location.hash.match(/#cfg=([A-Za-z0-9+/=_-]+)/);
   const qs = new URLSearchParams(location.search);
   const courseId = qs.get("course");
 
+  // โหลดโปรไฟล์จริงจาก profiles.json (same-origin, relative path — พกพาข้าม subpath ได้)
+  // ล้มเหลว/404/malformed → null แล้วใช้ seed PROFILES ในไฟล์แทน (ไม่ทำให้จอว่างเด็ดขาด)
+  let ext = null;
+  try {
+    ext = await fetch("profiles.json").then(r => r.ok ? r.json() : null).catch(() => null);
+  } catch(e){ ext = null; }
+  if (!ext || typeof ext !== "object" || Array.isArray(ext)){
+    if (ext) console.warn("profiles.json รูปแบบไม่ถูกต้อง — ใช้โปรไฟล์ seed ในไฟล์แทน");
+    ext = null;
+  }
+  // external ทับ seed; ถ้า fetch ล้มเหลวก็เหลือแต่ seed
+  const profiles = { ...PROFILES, ...(ext || {}) };
+  effectiveProfiles = profiles;   // ให้ตัวเลือกในหน้าตั้งค่าเห็นโปรไฟล์ชุดเดียวกัน
+
   if (m){
     const parsed = decodeCfg(m[1]);
     if (parsed) cfg = mergeCfg(DEFAULTS, parsed);
-  } else if (courseId && PROFILES[courseId]){
-    const p = { ...PROFILES[courseId] };
+  } else if (courseId && profiles[courseId]){
+    const p = { ...profiles[courseId] };
     delete p.label;                       // label เป็น UI metadata ไม่ใช่ config
     cfg = mergeCfg(DEFAULTS, p);
     activeCourseId = courseId;
