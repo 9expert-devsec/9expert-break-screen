@@ -1,70 +1,63 @@
 {
-  "power-bi-desktop": {
-    "label": "Power BI Desktop for Business Analytics",
+  "break-time": {
+    "label": "ช่วงพักเบรค",
     "courses": [
       {
-        "badge": "Best Seller",
+        "badge": "",
+        "title": "Claude Cowork for Business",
+        "meta": "2 วัน · (12 ชม.) · 14,900.-",
+        "desc": "เรียนรู้ตั้งแต่การใช้งาน Claude ผ่านหลากหลายช่องทางเรียนรู้ตั้งแต่การใช้งาน Claude ผ่านหลากหลายช่องทาง ได้แก่ Claude.ai (Web & Mobile), Claude Desktop App, Cowork Mode และ Claude Code พร้อม Workshop ที่เน้นการนำไปประยุกต์ใช้จริง ในงานบริหาร",
+        "img": "https://res.cloudinary.com/ddva7xvdt/image/upload/v1780548889/courses/covers/ljse8eo5scpdn6jv6nll.webp",
+        "url": "https://www.9experttraining.com/claude-ai-agent-training-course"
+      },
+      {
+        "badge": "แนะนำ",
         "title": "Power BI Desktop for Business Analytics",
-        "desc": "เปลี่ยนข้อมูลเป็น Insight สร้างรายงานแบบ Interactive Dashboard เพื่อการตัดสินใจทางธุรกิจ",
-        "meta": "2 วัน (12 ชม.) · 8,500.-",
-        "img": "https://www.9experttraining.com/sites/default/files/styles/cover/public/course/cover/Power%20BI%20Desktop%20for%20Business%20Analytics.png.webp?itok=bS-YZgVY",
+        "meta": "2 วัน · (12 ชม.) · 8,500.-",
+        "desc": "เพราะการตัดสินใจในเชิงธุรกิจต้องการความถูกต้องและรวดเร็วของข้อมูล ปัจจุบันเทคโนโลยีด้านการวิเคราะห์ข้อมูล (Data Analytics) ที่เป็น Empower ให้เราสามารถทำการวิเคราะห์ สรุปผล และคาดการณ์ข้อมูลได้อย่างรวดเร็ว โดย Power BI ได้ถูกจัดอันดับว่าเป็นซอฟต์แวร์ด้าน Business Intelligence and Analytics Platforms ที่เป็น Leader และพร้อมที่จะให้ทุกท่านสามารถนำข้อมูลมหาศาล มาจัดระเบียบ ปรับแต่ง คำนวณ พร้อมกับการสร้างรายงานให้สวยงาม น่าสนใจ และ Interactive ได้ เรียกดูได้ในทุก Platform ทั้ง PC, Tablet และ Mobile อีกด้วย เพื่อให้คุณสร้าง Business Insight ได้ด้วยตัวเอง หลักสูตรนี้จึงเหมาะสำหรับผู้ที่ต้องการนำเอาข้อมูลที่มีมาใช้เพื่อวิเคราะห์ในเชิงธุรกิจ",
+        "img": "https://res.cloudinary.com/ddva7xvdt/image/upload/v1780390636/courses/covers/a0mgwpyw9efrjbwtvoxw.webp",
         "url": "https://www.9experttraining.com/power-bi-desktop-business-analytics-training-course"
       },
       {
-        "badge": "AI Skills",
-        "title": "Microsoft 365 Copilot for Business Professionals",
-        "desc": "เปลี่ยน Microsoft 365 ให้เป็นทีมงาน AI ส่วนตัว ลดเวลาทำเอกสาร สรุปประชุม และวิเคราะห์ข้อมูล",
-        "meta": "2 วัน (12 ชม.) · 14,900.-",
-        "img": "https://www.9experttraining.com/sites/default/files/styles/cover/public/course/cover/Business%20Professionals_1.png.webp?itok=3M7gPvff",
-        "url": "https://www.9experttraining.com/microsoft-365-copilot-training-course"
+        "badge": "แนะนำ",
+        "title": "Workflow Automation with n8n",
+        "meta": "2 วัน · (12 ชม.) · 14,900.-",
+        "desc": "n8n เป็นแพลตฟอร์มโอเพนซอร์สสำหรับ Workflow Automation และ Workflow Orchestration ที่ทรงพลัง ช่วยให้สามารถเชื่อมต่อและทำงานร่วมกับบริการต่าง ๆ ได้อย่างยืดหยุ่นผ่าน Interface แบบ Visual โดยลดความจำเป็นในการเขียนโค้ด ทำให้การสร้างระบบอัตโนมัติและการเชื่อมต่อ AI เป็นไปได้อย่างรวดเร็วและมีประสิทธิภาพ",
+        "img": "https://res.cloudinary.com/ddva7xvdt/image/upload/v1780549215/courses/covers/vuchzvwbpwtpcizvaozl.webp",
+        "url": "https://www.9experttraining.com/workflow-automation-n8n-training-course"
       },
       {
-        "badge": "Advanced",
+        "badge": "แนะนำ",
         "title": "Microsoft Excel Advanced",
-        "desc": "สูตรคำนวณซับซ้อน PivotTable PivotChart และ Power Query พร้อมเทคนิคใช้งานได้จริง",
-        "meta": "2 วัน (12 ชม.) · 8,500.-",
-        "img": "https://www.9experttraining.com/sites/default/files/styles/large_cover/public/course/images/Microsoft%20Excel%20Advanced-100.webp?itok=7l3lIv6L",
+        "meta": "2 วัน · (12 ชม.) · 8,500.-",
+        "desc": "หลักสูตร Microsoft Excel Advanced ออกแบบมาสำหรับผู้ที่ใช้งาน Excel อยู่แล้ว แต่ต้องการศึกษาสูตรคำนวณที่ซับซ้อนเพิ่มเติม พร้อมทั้งสามารถนำสูตรคำนวณต่าง ๆ ไปประยุกต์ใช้งานได้จริงอย่างมีประสิทธิภาพยิ่งขึ้น เช่น งาน HR, Inventory, Sale & Marketing เป็นต้น นอกจากนี้แล้วในหลักสูตรนี้ยังกล่าวถึงเทคนิคการทำงานกับข้อมูล, การทำ PivotTable, PivotChart พร้อมทั้ง Power Query รวมถึงการกำหนดค่าความปลอดภัยต่าง ๆ เช่น การซ่อนสูตรคำนวณ , การ Protect Sheet และ การตั้งค่ารหัสผ่านของไฟล์",
+        "img": "https://res.cloudinary.com/ddva7xvdt/image/upload/v1780547434/courses/covers/o6w87qkscoycr7qzdwqf.webp",
         "url": "https://www.9experttraining.com/excel-advanced-training-course"
+      },
+      {
+        "badge": "แนะนำ",
+        "title": "Python Programming",
+        "meta": "3 วัน · (18 ชม.) · 11,900.-",
+        "desc": "ภาษา Python (ไพธอน) ซึ่งเหมาะสำหรับนักเรียน นักศึกษา วิศวกร นักพัฒนาซอฟต์แวร์ หรือบุคคลทั่วไปที่มีความสนใจเริ่มเรียน Python หรือพัฒนาซอฟต์แวร์ ไม่ว่าผู้เข้าอบรมเคยมีประสบการณ์การเขียนโปรแกรมด้วยภาษาอื่น ๆ มาก่อน หรืออยู่ในช่วงเริ่มต้นศึกษาการเขียนโปรแกรมเป็นครั้งแรก หลังจากผ่านหลักสูตร Python Programming นี้ผู้เข้าอบรมจะได้เรียนรู้แนวคิดการเขียนโปรแกรม Python พื้นฐานเพื่อสั่งงานคอมพิวเตอร์ หลักภาษาและไวยากรณ์ของภาษา Python เวอร์ชั่น 3.x รวมถึงกระบวนทัศน์การเขียนโปรแกรมเช่น Object-oriented programming (OOP) และ Functional programming เพื่อสามารถนำไปใช้งานจริงได้",
+        "img": "https://res.cloudinary.com/ddva7xvdt/image/upload/v1780555295/courses/covers/lgfcy0ugbt6ofhyxog51.webp",
+        "url": "https://www.9experttraining.com/python-programming-training-course"
+      },
+      {
+        "badge": "",
+        "title": "Power Automate (Desktop) for Business Automation",
+        "meta": "2 วัน · (12 ชม.) · 10,900.-",
+        "desc": "สอนสร้าง Workflow ประเภท Desktop Flow ด้วย Power Automate Desktop เพื่อมาช่วยสร้าง Workflow ทางธุรกิจ เพื่อสร้างกระบวนการอัตโนมัติ บนเครื่อง เพื่อสั่งการ ควบคุม Email, Excel, Application ทั้งการควบคุมเมาส์และคีย์บอร์ด เพื่อทำงานอัตโนมัติ",
+        "img": "https://res.cloudinary.com/ddva7xvdt/image/upload/v1780548516/courses/covers/qjbh1skh2bzgg7putaek.webp",
+        "url": "https://www.9experttraining.com/power-automate-desktop-training-course"
       }
     ],
     "videos": {
       "mode": "same",
       "same": [
-        "https://youtu.be/WSvkcRjTBMQ — แนะนำ Power BI Desktop สำหรับผู้เริ่มต้น",
-        "https://youtu.be/nThhgzLPPZA — เริ่มต้น Power BI เพื่อการวิเคราะห์ข้อมูล",
-        "https://youtu.be/xZHRyPpK23A — Power BI วิเคราะห์ข้อมูลจากไฟล์ Excel",
-        "https://youtu.be/jbwhA0sEWiE — แนะนำหลักสูตร Power BI for Data Analytics"
-      ]
-    }
-  },
-  "excel-advanced": {
-    "label": "Microsoft Excel Advanced",
-    "courses": [
-      {
-        "badge": "Advanced",
-        "title": "Microsoft Excel Advanced",
-        "desc": "สูตรคำนวณซับซ้อน PivotTable PivotChart และ Power Query พร้อมเทคนิคใช้งานได้จริง",
-        "meta": "2 วัน (12 ชม.) · 8,500.-",
-        "img": "https://www.9experttraining.com/sites/default/files/styles/large_cover/public/course/images/Microsoft%20Excel%20Advanced-100.webp?itok=7l3lIv6L",
-        "url": "https://www.9experttraining.com/excel-advanced-training-course"
-      },
-      {
-        "badge": "Best Seller",
-        "title": "Power BI Desktop for Business Analytics",
-        "desc": "เปลี่ยนข้อมูลเป็น Insight สร้างรายงานแบบ Interactive Dashboard เพื่อการตัดสินใจทางธุรกิจ",
-        "meta": "2 วัน (12 ชม.) · 8,500.-",
-        "img": "https://www.9experttraining.com/sites/default/files/styles/cover/public/course/cover/Power%20BI%20Desktop%20for%20Business%20Analytics.png.webp?itok=bS-YZgVY",
-        "url": "https://www.9experttraining.com/power-bi-desktop-business-analytics-training-course"
-      }
-    ],
-    "videos": {
-      "mode": "same",
-      "same": [
-        "https://youtu.be/KgeGUBi5Kr0 — PivotTable พื้นฐานสู่ Dashboard",
-        "https://youtu.be/FgblcbjyKt8 — Conditional Formatting ขั้นสูง",
-        "https://youtu.be/bTNE1vcB6xA — Excel Macro เบื้องต้น",
-        "https://youtu.be/IrgXKfn-6U0 — สร้างใบแจ้งหนี้ PDF 100 ไฟล์ด้วย Macro"
-      ]
+        "https://www.youtube.com/watch?v=yPskNjj6NeM",
+        "https://www.youtube.com/watch?v=CZONFEbD56E&t=3s"
+      ],
+      "byDay": {}
     }
   }
 }
