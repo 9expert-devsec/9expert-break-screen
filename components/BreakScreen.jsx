@@ -19,7 +19,7 @@ import {
   shortUrl,
 } from "@/lib/breakConfig";
 
-export default function BreakScreen() {
+export default function BreakScreen({ initialCourseSlug = null, initialProfile = null }) {
   useEffect(() => {
     /* ============================================================
        9Expert Break Screen v2 — imperative engine (ported as-is)
@@ -487,20 +487,19 @@ export default function BreakScreen() {
       }
     }
 
-    // สร้าง base URL (origin+pathname) โดยตัด query/hash ทิ้ง สำหรับลิงก์ ?course=
-    function pageBase(){
-      return (location.origin && location.origin !== "null")
-        ? location.origin + location.pathname
-        : location.pathname;
+    // origin ล้วน (ไม่รวม pathname) สำหรับสร้างลิงก์หลักสูตรแบบ path /{slug}
+    function courseLinkOrigin(){
+      return (location.origin && location.origin !== "null") ? location.origin : "";
     }
 
-    // อัปเดตช่องลิงก์หลักสูตร (?course=) ตามโปรไฟล์ที่เลือกใน picker
+    // อัปเดตช่องลิงก์หลักสูตรตามโปรไฟล์ที่เลือกใน picker — ลิงก์แบบ path /{slug}
+    // (ISR cache ต่อ pathname) ไม่ใช่ ?course= เดิมอีกต่อไป
     function updateCourseLink(){
       const id = $("courseProfile").value;
       const el = $("courseLink");
       const btn = $("btnCopyCourseLink");
       if (id && effectiveProfiles[id]){
-        el.value = pageBase() + "?course=" + id;
+        el.value = courseLinkOrigin() + "/" + id;
         el.disabled = false; btn.disabled = false;
       } else {
         el.value = "";
@@ -752,39 +751,36 @@ export default function BreakScreen() {
     /* ---------- init ---------- */
     async function init(){
       // ลำดับความสำคัญของ config (เฉพาะเจาะจงสุดชนะ):
-      //   1) #cfg=...        → snapshot ที่ freeze มาแล้ว (override เต็มรูปแบบ)
-      //   2) ?course=<id>    → โหลดโปรไฟล์ของหลักสูตรนั้นจาก profiles (json + seed)
-      //   3) DEFAULTS/stored → ค่าเริ่มต้นของสถาบัน (safety net)
+      //   1) #cfg=...            → snapshot ที่ freeze มาแล้ว (client-only, override เต็มรูปแบบ)
+      //   2) initialProfile      → โปรไฟล์ที่ server resolve มาแล้วสำหรับเส้นทาง /{slug} (ISR)
+      //   3) DEFAULTS/stored     → ค่าเริ่มต้นของสถาบัน (safety net)
+      //
+      // ความต่างจากเดิม: การ resolve หลักสูตรไม่พึ่ง fetch("/profiles.json") อีกต่อไป
+      // เส้นทาง /{slug} จะได้โปรไฟล์จาก server (initialProfile) ตรง ๆ ผ่าน props —
+      // ปิดจุดบั๊กที่ ?course= ไม่พบแล้วตกไป localStorage เก่า
       const m = location.hash.match(/#cfg=([A-Za-z0-9+/=_-]+)/);
       const qs = new URLSearchParams(location.search);
-      const courseId = qs.get("course");
-
-      // โหลดโปรไฟล์จริงจาก profiles.json (served from /public) — ล้มเหลว/404/malformed
-      // → null แล้วใช้ seed PROFILES ในไฟล์แทน (ไม่ทำให้จอว่างเด็ดขาด)
-      let ext = null;
-      try {
-        ext = await fetch("/profiles.json").then(r => r.ok ? r.json() : null).catch(() => null);
-      } catch(e){ ext = null; }
-      if (!ext || typeof ext !== "object" || Array.isArray(ext)){
-        if (ext) console.warn("profiles.json รูปแบบไม่ถูกต้อง — ใช้โปรไฟล์ seed ในไฟล์แทน");
-        ext = null;
-      }
-      // external ทับ seed; ถ้า fetch ล้มเหลวก็เหลือแต่ seed
-      const profiles = { ...PROFILES, ...(ext || {}) };
-      effectiveProfiles = profiles;   // ให้ตัวเลือกในหน้าตั้งค่าเห็นโปรไฟล์ชุดเดียวกัน
 
       if (m){
+        // 1) #cfg= — client-only, ชนะทุกกรณี (แม้อยู่บนหน้า /{slug})
         const parsed = decodeCfg(m[1]);
         if (parsed) cfg = mergeCfg(DEFAULTS, parsed);
-      } else if (courseId && profiles[courseId]){
-        const p = { ...profiles[courseId] };
+      } else if (initialProfile){
+        // 2) โปรไฟล์จาก server (เส้นทาง /{slug})
+        const p = { ...initialProfile };
         const plabel = p.label || "";         // เก็บ label ไว้แสดงบนหัวจอก่อนตัดทิ้ง
         delete p.label;                       // label ไม่ใช่ config ปกติ → ตัดก่อน merge
         cfg = mergeCfg(DEFAULTS, p);
         cfg.display.profileLabel = plabel;    // ใส่กลับเป็นค่าสำหรับ render (สตริงสั้น ๆ)
-        activeCourseId = courseId;
+        activeCourseId = initialCourseSlug || "";
+      } else if (initialCourseSlug){
+        // 2') server เห็น slug แต่ MSDB ไม่มีโปรไฟล์นั้น → แจ้งเตือน + ใช้ DEFAULTS/stored
+        //     (ห้าม fallback ไป localStorage สำหรับหลักสูตรที่ server รู้จักจริง; กรณีนี้คือ "ไม่รู้จัก")
+        unknownCourseId = initialCourseSlug;
+        const stored = await storGet();
+        if (stored) cfg = mergeCfg(DEFAULTS, stored);
       } else {
-        if (courseId) unknownCourseId = courseId;  // ?course= แต่ไม่พบโปรไฟล์ → แจ้งเตือนภายหลัง
+        // 3) หน้าแรก (institution default) — พฤติกรรมเดิมทุกอย่าง
         const stored = await storGet();
         if (stored) cfg = mergeCfg(DEFAULTS, stored);
       }
@@ -797,6 +793,35 @@ export default function BreakScreen() {
         const auto = Number(raw);
         // autostart เริ่มแบบปิดเสียงตามนโยบาย autoplay ของเบราว์เซอร์ (?start=0 = เล่นต่อเนื่อง)
         startBreak(auto > 0 ? auto : 0, auto > 0 ? "พักเบรก" : "เล่นวิดีโอต่อเนื่อง", true);
+      }
+
+      // ---- non-critical: เติมโปรไฟล์ชุดเต็มให้ตัวเลือกในหน้าตั้งค่า ----
+      // best-effort, offline-safe; ไม่ block/ไม่ตัดสินการ resolve หลักสูตรหลัก
+      loadProfilesForPicker();
+    }
+
+    // โหลด map โปรไฟล์ทั้งหมดจาก /profiles.json สำหรับ picker เท่านั้น (ไม่เกี่ยวกับ
+    // การ resolve หลักสูตรที่แสดงอยู่) — ล้มเหลว/404/malformed → เหลือแต่ seed PROFILES
+    async function loadProfilesForPicker(){
+      let ext = null;
+      try {
+        ext = await fetch("/profiles.json").then(r => r.ok ? r.json() : null).catch(() => null);
+      } catch(e){ ext = null; }
+      if (!ext || typeof ext !== "object" || Array.isArray(ext)){
+        if (ext) console.warn("profiles.json รูปแบบไม่ถูกต้อง — ใช้โปรไฟล์ seed ในไฟล์แทน");
+        ext = null;
+      }
+      effectiveProfiles = { ...PROFILES, ...(ext || {}) };
+      // โปรไฟล์ที่ server resolve มา (จาก MSDB) อาจยังไม่มีใน /profiles.json แบบ static
+      // → ยัดเข้า picker เองเพื่อให้ตัวเลือกปัจจุบันปรากฏและลิงก์หลักสูตรสร้างได้
+      if (initialCourseSlug && initialProfile && !effectiveProfiles[initialCourseSlug]){
+        effectiveProfiles[initialCourseSlug] = initialProfile;
+      }
+      // ถ้าเปิดหน้าตั้งค่าค้างอยู่ ให้รีเฟรช select ให้เห็นชุดใหม่ทันที
+      if (!$("modalSettings").hidden){
+        populateProfileSelect();
+        $("courseProfile").value = activeCourseId;
+        updateCourseLink();
       }
     }
     init();
@@ -1105,11 +1130,11 @@ export default function BreakScreen() {
                 <button className="btn" id="btnCopyLink">คัดลอกลิงก์</button>
               </div>
               <div className="share-row">
-                <input className="inp" id="courseLink" readOnly aria-label="ลิงก์หลักสูตร (?course=)" placeholder="เลือกโปรไฟล์หลักสูตรด้านบนเพื่อสร้างลิงก์" />
+                <input className="inp" id="courseLink" readOnly aria-label="ลิงก์หลักสูตร (path /หลักสูตร)" placeholder="เลือกโปรไฟล์หลักสูตรด้านบนเพื่อสร้างลิงก์" />
                 <button className="btn" id="btnCopyCourseLink">คัดลอกลิงก์หลักสูตร</button>
               </div>
               <p className="hint" style={{margin:0}}>
-                <b style={{color:"var(--sky)"}}>ลิงก์หลักสูตร (?course=)</b> — สะท้อนโปรไฟล์ล่าสุดในไฟล์ที่ deploy เสมอ เหมาะสำหรับส่งให้ผู้สอน/ปักหมุดไว้ เนื้อหาอัปเดตได้ด้วยการ redeploy<br/>
+                <b style={{color:"var(--sky)"}}>ลิงก์หลักสูตร (path /หลักสูตร)</b> — สะท้อนโปรไฟล์ล่าสุดจาก MSDB ผ่าน ISR เสมอ เหมาะสำหรับส่งให้ผู้สอน/ปักหมุดไว้ เนื้อหาอัปเดตอัตโนมัติ ไม่ต้อง redeploy<br/>
                 <b style={{color:"var(--lime)"}}>ลิงก์ snapshot (#cfg=)</b> — freeze ค่าที่ตั้งไว้ ณ ตอนนี้ทั้งหมด เหมาะกับการตั้งค่าเฉพาะกิจครั้งเดียว
               </p>
             </div>
