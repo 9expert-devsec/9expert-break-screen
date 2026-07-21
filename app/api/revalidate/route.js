@@ -1,62 +1,67 @@
-// app/api/revalidate/route.js
-// On-demand ISR revalidation receiver. MSDB fires a POST here after a
-// break-screen profile write so the affected /{slug} page refreshes in
-// seconds. This is an optimization on top of the 5-min ISR — if the call
-// fails, ISR still catches up, so nothing breaks. POST-only (GET → 405).
+/* ============================================================
+   /api/revalidate — on-demand ISR purge for a break-screen course.
+   Called by MSDB after an admin saves a profile so the projector
+   shows fresh data on the NEXT load instead of waiting out the
+   300s ISR cycle.
+
+   Two cache layers are busted:
+     1. revalidatePath(path)   → the rendered course route (Full Route Cache)
+     2. revalidateTag("break-profiles") → the shared upstream fetch in
+        lib/profilesSource.js (Data Cache), which is keyed independently
+        of the route and reused across pages/generateStaticParams.
+   Auth: header `x-revalidate-token` must equal REVALIDATE_SECRET. Fail closed.
+   ============================================================ */
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { timingSafeEqual } from "crypto";
+import { revalidatePath, revalidateTag } from "next/cache";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-function safeEqual(a, b) {
-  const ab = Buffer.from(String(a || ""));
-  const bb = Buffer.from(String(b || ""));
-  if (ab.length !== bb.length) return false;
-  return timingSafeEqual(ab, bb);
-}
+const SLUG_RE = /^[a-z0-9-]+$/;
+const PROFILES_TAG = "break-profiles";
 
 export async function POST(req) {
-  const secret = process.env.REVALIDATE_SECRET || "";
-  const provided =
-    req.headers.get("x-revalidate-secret") ||
-    new URL(req.url).searchParams.get("secret") ||
-    "";
-
-  if (!secret || !safeEqual(provided, secret)) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  // 1. Auth — fail closed if secret is unset or token mismatches.
+  const secret = process.env.REVALIDATE_SECRET;
+  const token = req.headers.get("x-revalidate-token");
+  if (!secret || token !== secret) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  // 2. Resolve the target path: explicit ?path=/slug wins; else build from slug.
+  const { searchParams } = new URL(req.url);
+  const explicitPath = searchParams.get("path");
 
   let body = {};
   try {
-    body = await req.json();
+    body = (await req.json()) ?? {};
   } catch {
-    body = {};
+    body = {}; // body is optional when ?path= is provided
   }
+  const slug = body?.slug;
 
-  // Accept { slug } and/or { slugs: [...] }; also revalidate "/" so the picker/home stays fresh.
-  const slugs = new Set();
-  if (typeof body.slug === "string" && body.slug.trim()) slugs.add(body.slug.trim());
-  if (Array.isArray(body.slugs)) {
-    for (const s of body.slugs) if (typeof s === "string" && s.trim()) slugs.add(s.trim());
-  }
-
-  const revalidated = [];
-  try {
-    for (const s of slugs) {
-      revalidatePath(`/${s}`);
-      revalidated.push(`/${s}`);
-    }
-    // Home also reads the profile set indirectly (picker); refresh it too.
-    revalidatePath("/");
-    revalidated.push("/");
-  } catch (e) {
+  let path;
+  if (explicitPath) {
+    path = explicitPath;
+  } else if (typeof slug === "string" && SLUG_RE.test(slug)) {
+    path = `/${slug}`;
+  } else {
     return NextResponse.json(
-      { ok: false, error: e?.message || "revalidate failed" },
-      { status: 500 }
+      { ok: false, error: "Provide ?path=/<slug> or a body { slug } matching ^[a-z0-9-]+$" },
+      { status: 400 }
     );
   }
 
-  return NextResponse.json({ ok: true, revalidated }, { status: 200 });
+  // 3 + 4. Bust the rendered page AND the shared upstream fetch (Data Cache).
+  const revalidated = [];
+  revalidatePath(path);
+  revalidated.push(path);
+  revalidateTag(PROFILES_TAG);
+  revalidated.push(PROFILES_TAG);
+
+  // Note: home path "/" is NOT revalidated — app/page.jsx renders <BreakScreen />
+  // client-side and does not call getAllProfiles, so it has no server ISR data.
+
+  // 5.
+  return NextResponse.json({ ok: true, revalidated, now: Date.now() });
 }
