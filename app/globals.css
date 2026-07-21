@@ -106,6 +106,17 @@ img{display:block}
   color:var(--sky);font-size:clamp(15px,1.4vw,19px);letter-spacing:.01em}
 .corner-actions{position:fixed;top:var(--pad);right:var(--pad);display:flex;gap:10px;z-index:5}
 body.in-break .corner-actions{display:none}
+/* back-to-picker link (top-left) — mirrors .btn styling; hidden during a running break */
+.back-link{
+  position:fixed;top:var(--pad);left:var(--pad);z-index:5;
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--border);background:rgba(255,255,255,.04);
+  color:var(--ice);border-radius:12px;padding:10px 16px;
+  font-size:15px;font-weight:600;text-decoration:none;transition:all .2s var(--ease);
+}
+.back-link:hover{border-color:var(--lime);background:rgba(255,255,255,.08)}
+.back-link:active{transform:translateY(1px)}
+body.in-break .back-link{display:none}
 
 /* ---------- TICKER (ข้อความวิ่งด้านบน) ---------- */
 .ticker{
@@ -403,10 +414,12 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
 .picker-sub{color:var(--slate);font-size:clamp(14px,1.3vw,18px);max-width:640px}
 
 .picker-grid{
-  width:100%;max-width:1240px;display:grid;gap:clamp(14px,1.6vw,22px);
-  grid-template-columns:repeat(auto-fill,minmax(clamp(220px,24vw,300px),1fr));
+  width:100%;max-width:1300px;display:flex;gap:clamp(14px,1.6vw,22px);
+  /* grid-template-columns:repeat(auto-fill,minmax(clamp(220px,24vw,300px),1fr)); */
+  flex-wrap: wrap;justify-content:center;
 }
 .picker-card{
+  max-width:400px;min-width:220px;width:100%;
   display:flex;flex-direction:column;overflow:hidden;
   background:var(--panel);border:1px solid var(--border);border-radius:18px;
   color:var(--ice);text-decoration:none;transition:all .2s var(--ease);

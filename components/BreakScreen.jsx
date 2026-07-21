@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from "react";
-import { Settings, Maximize, Check, X } from "lucide-react";
+import Link from "next/link";
+import { Settings, Maximize, Check, X, ArrowLeft } from "lucide-react";
 import {
   DAY_NAMES,
   SITE,
@@ -851,6 +852,13 @@ export default function BreakScreen({ initialCourseSlug = null, initialProfile =
           <circle cx="550" cy="320" r="4" fill="#48B0FF" fillOpacity=".45"/>
         </svg>
       </div>
+
+      {/* back to the home profile picker — only in the duration-selection state;
+          hidden once a break starts (body.in-break) so it never overlaps the video/countdown */}
+      <Link href="/" className="back-link">
+        <ArrowLeft size={18} strokeWidth={1.8} />
+        <span>Back</span>
+      </Link>
 
       <div className="corner-actions" id="cornerActions">
         <button className="btn btn-icon js-settings" title="ตั้งค่า (หลังบ้าน)" aria-label="ตั้งค่า">
