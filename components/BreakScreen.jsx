@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Settings, Maximize, Check, X, ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { Settings, Maximize, Check, X, ArrowLeft, Volume2, VolumeX, DoorOpen } from "lucide-react";
 import {
   DAY_NAMES,
   SITE,
@@ -245,7 +246,7 @@ export default function BreakScreen({ initialCourseSlug = null, initialProfile =
         ? (label || "เล่นวิดีโอต่อเนื่อง")
         : (label || "พักเบรก") + " " + minutes + " นาที";
       $("todayChip").textContent = "วัน" + DAY_NAMES[new Date().getDay()];
-      $("btnMute").textContent = muted ? "เปิดเสียง" : "ปิดเสียง";
+      updateMuteBtn(); // #4 reflect initial mute state on the speaker icon
 
       mountPlayer();
 
@@ -670,6 +671,17 @@ export default function BreakScreen({ initialCourseSlug = null, initialProfile =
     }
 
     /* ---------- misc UI ---------- */
+    // #4 speaker icon toggle — presentation only. Swaps which lucide icon shows
+    // (Volume2 ↔ VolumeX via the .is-muted class) and updates aria-label/title.
+    // The mute/unmute logic itself (below) is unchanged.
+    function updateMuteBtn(){
+      const b = $("btnMute");
+      if (!b) return;
+      b.classList.toggle("is-muted", muted);
+      const lbl = muted ? "เปิดเสียง" : "ปิดเสียง";
+      b.setAttribute("aria-label", lbl);
+      b.setAttribute("title", lbl);
+    }
     function toggleMute(){
       muted = !muted;
       if (IS_FILE){
@@ -677,7 +689,7 @@ export default function BreakScreen({ initialCourseSlug = null, initialProfile =
       } else {
         ytCmd(muted ? "mute" : "unMute");
       }
-      $("btnMute").textContent = muted ? "เปิดเสียง" : "ปิดเสียง";
+      updateMuteBtn();
     }
     function toggleFullscreen(){
       if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
@@ -893,39 +905,76 @@ export default function BreakScreen({ initialCourseSlug = null, initialProfile =
         </div>
 
         <header className="topbar">
-          <img className="logo" src="/images/9expert-logo.png" width={720} height={255} alt="9Expert Training" />
-          <div className="sess">
-            <span className="eyebrow">9Expert Training</span>
-            <span className="lab lab-profile" id="profileLabel" hidden></span>
+          {/* #1 brand logo (next/image), far top-left of the header. File is
+              /images/9exp-stand.png (the "9expert-stand" asset added to the repo). */}
+          <Image className="logo" src="/images/9exp-stand.png" width={400} height={400} alt="9Expert Training" priority />
+
+          {/* #2 wording block commented out — the logo now identifies the brand and the
+              control cluster moved left, so the eyebrow + profile label are not needed here.
+              The lab-session element is KEPT (hidden) because the imperative engine writes to
+              $("sessionLabel") in startBreak(); removing it would throw. Restore by
+              un-hiding and un-commenting. */}
+          <div className="sess" hidden>
+            {/* <span className="eyebrow">9Expert Training</span> */}
+            {/* <span className="lab lab-profile" id="profileLabel" hidden></span> */}
             <span className="lab lab-session" id="sessionLabel">พักเบรก</span>
           </div>
-          <div className="spacer"></div>
+
+          {/* #3 control cluster moved to the LEFT, immediately after the logo:
+              [logo] [clock] [sound icon] [exit icon]. The trailing spacer keeps the
+              right side of the bar empty. */}
           <span className="clock" id="clockNow">--:--:--</span>
           <div className="ctrls">
             <button className="btn" id="btnMinus5">-5 นาที</button>
             <button className="btn" id="btnPlus5">+5 นาที</button>
-            <button className="btn" id="btnMute">ปิดเสียง</button>
-            <button className="btn btn-icon js-settings" title="ตั้งค่า" aria-label="ตั้งค่า">
-              <Settings size={17} strokeWidth={1.8} />
+
+            {/* #4 mute → icon-only speaker toggle (Volume2 ↔ VolumeX). Both icons are
+                rendered; CSS shows the one matching state via .is-muted (toggled by
+                updateMuteBtn()). aria-label/title updated with state. */}
+            <button className="btn btn-icon btn-mute" id="btnMute" aria-label="ปิดเสียง" title="ปิดเสียง">
+              <Volume2 className="mute-on" size={18} strokeWidth={1.8} aria-hidden="true" />
+              <VolumeX className="mute-off" size={18} strokeWidth={1.8} aria-hidden="true" />
             </button>
+
+            {/* #5 settings (gear) not used on the running-break view — commented out, not deleted */}
+            {/* <button className="btn btn-icon js-settings" title="ตั้งค่า" aria-label="ตั้งค่า">
+              <Settings size={17} strokeWidth={1.8} />
+            </button> */}
+
             <button className="btn btn-icon js-fullscreen" title="เต็มจอ" aria-label="เต็มจอ">
               <Maximize size={17} strokeWidth={1.8} />
             </button>
-            <button className="btn btn-blue" id="btnEnd">จบเบรก</button>
+
+            {/* #6 จบเบรก → exit/leave icon (DoorOpen). Same onClick (stopAllToHome). */}
+            <button className="btn btn-icon btn-blue" id="btnEnd" aria-label="จบเบรก" title="จบเบรก">
+              <DoorOpen size={18} strokeWidth={1.8} aria-hidden="true" />
+            </button>
           </div>
+          <div className="spacer"></div>
         </header>
 
         <main className="layout">
-          <div className="video-panel" id="videoPanel">
-            <div className="no-video" id="noVideo" hidden>
-              <div className="eyebrow">YouTube</div>
-              <p>ยังไม่ได้ตั้งค่าวิดีโอสำหรับวันนี้ — เพิ่มลิงก์ YouTube ได้ที่เมนูตั้งค่า (หลังบ้าน)</p>
-              <button className="btn btn-lime js-settings">ตั้งค่าวิดีโอ</button>
+          {/* left column: player + relocated page footer (#10) */}
+          <div className="video-col">
+            <div className="video-panel" id="videoPanel">
+              <div className="no-video" id="noVideo" hidden>
+                <div className="eyebrow">YouTube</div>
+                <p>ยังไม่ได้ตั้งค่าวิดีโอสำหรับวันนี้ — เพิ่มลิงก์ YouTube ได้ที่เมนูตั้งค่า (หลังบ้าน)</p>
+                <button className="btn btn-lime js-settings">ตั้งค่าวิดีโอ</button>
+              </div>
+              <div className="file-warn" id="fileWarn" hidden>
+                <span><b>เปิดจากไฟล์โดยตรง (file://)</b> — YouTube จะบล็อกวิดีโอ (Error 153) เพราะไม่ได้รับ Referrer
+                ให้เปิดไฟล์นี้ผ่านเว็บ (http/https) เช่น อัปโหลดขึ้น hosting หรือรันเซิร์ฟเวอร์ในเครื่อง แล้ววิดีโอจะเล่นได้ปกติ</span>
+                <button id="fileWarnClose" aria-label="ปิดคำเตือน">×</button>
+              </div>
             </div>
-            <div className="file-warn" id="fileWarn" hidden>
-              <span><b>เปิดจากไฟล์โดยตรง (file://)</b> — YouTube จะบล็อกวิดีโอ (Error 153) เพราะไม่ได้รับ Referrer
-              ให้เปิดไฟล์นี้ผ่านเว็บ (http/https) เช่น อัปโหลดขึ้น hosting หรือรันเซิร์ฟเวอร์ในเครื่อง แล้ววิดีโอจะเล่นได้ปกติ</span>
-              <button id="fileWarnClose" aria-label="ปิดคำเตือน">×</button>
+
+            {/* #10 footer relocated from the bottom of the right rail to the bottom-left of
+                the page, underneath the YouTube player. Same IDs (footSlogan/footSite are
+                written by applyDisplay/renderStart) and same span styling. */}
+            <div className="rail-foot page-foot">
+              <span className="slog" id="footSlogan">อย่าหยุดเรียนรู้</span>
+              <span id="footSite">9experttraining.com</span>
             </div>
           </div>
 
@@ -950,24 +999,31 @@ export default function BreakScreen({ initialCourseSlug = null, initialProfile =
                   <img id="promoCover" alt="Cover หลักสูตร" />
                   <div className="fb" id="promoCoverFb" hidden><span id="promoCoverInit">9</span></div>
                   <span className="promo-badge" id="promoBadge">แนะนำ</span>
+                  {/* #7 QR moved ONTO the cover — anchored to the bottom-right corner,
+                      white background + padding + rounded + shadow so it stays scannable
+                      over any cover art. Same IDs; setQr() still targets these. */}
+                  <div className="qr-wrap qr-overlay" id="qrWrap"><img id="promoQr" alt="QR Code ดูรายละเอียดหลักสูตร" /></div>
                 </div>
                 <div className="promo-title" id="promoTitle">—</div>
-                <div className="promo-meta" id="promoMeta"></div>
+                {/* #8 meta line (duration · hours · price) hidden per redesign. Element is
+                    KEPT in the DOM (hidden) because renderPromo() writes to $("promoMeta");
+                    removing it would throw. Un-hide to restore. */}
+                <div className="promo-meta" id="promoMeta" hidden></div>
                 <p className="promo-desc" id="promoDesc">—</p>
-                <div className="promo-foot">
-                  <div className="qr-wrap" id="qrWrap"><img id="promoQr" alt="QR Code ดูรายละเอียดหลักสูตร" /></div>
+                {/* #7/#9 promo-foot removed from view: the QR was relocated onto the cover
+                    (above), and the "สแกนเพื่อดูรายละเอียดและตารางอบรม" caption is no longer
+                    needed. Commented out (not deleted) for easy restore. No JS references
+                    the .info/.scan nodes, so this is safe to comment. */}
+                {/* <div className="promo-foot">
                   <div className="info">
                     <span className="scan">สแกนเพื่อดูรายละเอียด<br/>และตารางอบรม</span>
                   </div>
-                </div>
+                </div> */}
                 <div className="dots" id="promoDots"></div>
               </div>
             </div>
 
-            <div className="rail-foot">
-              <span className="slog" id="footSlogan">อย่าหยุดเรียนรู้</span>
-              <span id="footSite">9experttraining.com</span>
-            </div>
+            {/* #10 rail-foot relocated to the left column (under the player) — see <main>. */}
           </aside>
         </main>
       </section>

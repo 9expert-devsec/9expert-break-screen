@@ -156,7 +156,13 @@ body.in-break .back-link{display:none}
   padding:max(var(--pad),2.5vmin);gap:clamp(10px,1.4vh,18px);
 }
 .topbar{display:flex;align-items:center;gap:clamp(12px,1.5vw,20px);flex:none}
-.topbar .logo{height:clamp(28px,3.2vh,42px);width:auto}
+/* square "stand" logo (400×400) — sized as a compact badge, readable on a projector */
+.topbar .logo{height:clamp(44px,6vh,72px);width:auto}
+/* #4 speaker toggle: render both lucide icons, show the one matching mute state.
+   .is-muted is toggled imperatively by updateMuteBtn(); default (sound on) shows Volume2. */
+.btn-mute .mute-off{display:none}
+.btn-mute.is-muted .mute-on{display:none}
+.btn-mute.is-muted .mute-off{display:block}
 .topbar .sess{display:flex;flex-direction:column;gap:1px;min-width:0}
 .topbar .sess .eyebrow{font-size:10.5px}
 .topbar .sess .lab{font-family:'LINE Seed Sans TH','Noto Sans Thai',sans-serif;font-weight:700;font-size:clamp(15px,1.5vw,20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -171,6 +177,11 @@ body.in-break .back-link{display:none}
 body[data-layout="wide"] .layout{grid-template-columns:minmax(0,1fr) clamp(420px,38vw,620px)}
 body[data-layout="video"] .layout{grid-template-columns:1fr}
 body[data-layout="video"] .rail{display:none}
+
+/* #10 left column: player fills the space, relocated footer sits beneath it (bottom-left) */
+.video-col{display:flex;flex-direction:column;gap:clamp(8px,1vh,14px);min-width:0;min-height:0}
+.video-col .video-panel{flex:1;min-height:0}
+.page-foot{flex:none;justify-content:flex-start;gap:16px;padding:0 4px}
 
 .video-panel{
   position:relative;min-height:0;background:#000;border:1px solid var(--border);
@@ -270,6 +281,16 @@ body[data-layout="wide"] .promo-desc{-webkit-line-clamp:4;font-size:clamp(15px,1
 .promo-foot{margin-top:auto;display:flex;align-items:center;gap:14px;flex:none;min-width:0}
 .qr-wrap{flex:none;background:#fff;border-radius:12px;padding:7px;width:clamp(104px,9vw,168px);height:clamp(104px,9vw,168px)}
 .qr-wrap img,#promoQr{width:100%;height:100%;image-rendering:pixelated}
+/* #7 QR overlaid on the cover's bottom-right corner — solid white bg + padding + rounded
+   + shadow keeps it scannable over any cover art; sized to scan from a distance without
+   dominating the cover. Higher specificity (.promo-cover .qr-overlay) overrides .qr-wrap size. */
+.promo-cover .qr-overlay{
+  position:absolute;right:8px;bottom:8px;z-index:2;
+  width:clamp(56px,4.75vw,80px);height:clamp(56px,4.75vw,80px);
+  padding:5px;border-radius:10px;
+  box-shadow:0 6px 20px rgba(0,0,0,.5);
+}
+body[data-layout="projector"] .promo-cover .qr-overlay{width:clamp(68px,5.75vw,100px);height:clamp(68px,5.75vw,100px)}
 .promo-foot .info{display:flex;flex-direction:column;gap:6px;min-width:0}
 .promo-foot .scan{font-family:'LINE Seed Sans TH','Noto Sans Thai',sans-serif;font-size:clamp(12px,1vw,13.5px);color:var(--slate);line-height:1.45}
 .dots{display:flex;gap:6px;flex:none;justify-content:center;margin-top:2px}
@@ -414,12 +435,12 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.55}
 .picker-sub{color:var(--slate);font-size:clamp(14px,1.3vw,18px);max-width:640px}
 
 .picker-grid{
-  width:100%;max-width:1300px;display:flex;gap:clamp(14px,1.6vw,22px);
+  width:100%;max-width:1200px;display:flex;gap:clamp(14px,1.6vw,22px);
   /* grid-template-columns:repeat(auto-fill,minmax(clamp(220px,24vw,300px),1fr)); */
   flex-wrap: wrap;justify-content:center;
 }
 .picker-card{
-  max-width:400px;min-width:220px;width:100%;
+  max-width:360px;min-width:220px;width:100%;
   display:flex;flex-direction:column;overflow:hidden;
   background:var(--panel);border:1px solid var(--border);border-radius:18px;
   color:var(--ice);text-decoration:none;transition:all .2s var(--ease);
